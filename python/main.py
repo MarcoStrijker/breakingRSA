@@ -30,7 +30,7 @@ def is_prime(number: int) -> int:
         return _memorization_prime[number]
 
     if number < 2:
-        return False
+        return 0
 
     for i in range(2, int(number ** 0.5) + 1):
         if number % i == 0:
@@ -129,9 +129,7 @@ def shor(number: int) -> set[int]:
 
     # If the number is even, the prime factors are 2 and the prime factors of the other number
     if number % 2 == 0:
-        result = {2}
-        result.update(shor(number // 2))
-        return result
+        return {2, *shor(number // 2)}
 
     # Staring with a guess of 3
     g = 3
@@ -168,9 +166,7 @@ def shor(number: int) -> set[int]:
         # When the second factor is not a prime
         # Recursively find the prime factors of the other number
         # We return the set of the unique primes
-        result = {f}
-        result.update(shor(number // f))
-        return result
+        return {f, *shor(number // f)}
 
 
 if __name__ == "__main__":
