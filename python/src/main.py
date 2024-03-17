@@ -29,6 +29,8 @@ def is_prime(number: int) -> int:
     if number in _memorization_prime:
         return _memorization_prime[number]
 
+    # Perform check after lookup since most evaluations will be
+    # for numbers higher than 1
     if number < 2:
         return 0
 
@@ -77,7 +79,7 @@ def calculate_exponent(guess: int) -> int:
     return r
 
 
-def find_factors(number: int, guess: int, exponent: int) -> int:
+def find_factors(number: int, guess: int, exponent: int) -> tuple[int, int]:
     """Find the factors for a number. the output is always a prime.
 
     Args:
@@ -104,7 +106,7 @@ def find_factors(number: int, guess: int, exponent: int) -> int:
         nom, den = den, nom % den
         outcome = math.gcd(nom, den)
 
-    return number // outcome
+    return number // outcome, number // (number // outcome)
 
 
 def shor(number: int) -> set[int]:
@@ -119,11 +121,8 @@ def shor(number: int) -> set[int]:
     """
 
     # Only factors can be found for values higher than 2
-    if number < 2:
-        return {number}
-
     # When the number itself is a prime, we just return the number and 1
-    if is_prime(number):
+    if number < 2 or is_prime(number):
         return {number}
 
     # If the number is even, the prime factors are 2 and the prime factors of the other number
@@ -143,30 +142,29 @@ def shor(number: int) -> set[int]:
         # possible to find the prime factors for the given number.
         # And this will restart the process with a new guess.
         try:
-            f = find_factors(number, g, r)
+            f1, f2 = find_factors(number, g, r)
         except (ZeroDivisionError, OverflowError):
             g += 1
             continue
 
-        # When the second factor is zero
+        # When the second factor is 1, the first factor is the prime factor
         # The guess was not correct, restart loop with another guess
-        if f == 1:
+        if f1 == 1:
             g += 1
             continue
 
         # When the second factor is a prime
         # We can return the two prime factors
-        if is_prime(number // f):
-            return {f, number // f}
+        if is_prime(f2):
+            return {f1, f2}
 
         # When the second factor is not a prime
         # Recursively find the prime factors of the other number
         # We return the set of the unique primes
-        return {f, *shor(number // f)}
+        return {f1, *shor(f2)}
 
 
 if __name__ == "__main__":
-    user_input = int(input("Enter a number: "))
     user_input = 32333333333331
     s = time.perf_counter_ns()
     factors = shor(user_input)
