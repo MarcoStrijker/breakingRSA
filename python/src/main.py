@@ -73,7 +73,7 @@ def calculate_exponent(guess: int) -> int:
     while g <= 1 and r % 2 == 0:
         r += 2
         g = pow(guess, r)
-
+        
     return r
 
 
@@ -135,9 +135,6 @@ def shor(number: int) -> set[int]:
 
     # Start the loop to find the prime factors
     while True:
-        # if g > number:
-        #     return {number}
-
         g = make_guess(number, g)
         r = calculate_exponent(g)
 
@@ -170,6 +167,7 @@ def shor(number: int) -> set[int]:
 
 if __name__ == "__main__":
     user_input = int(input("Enter a number: "))
+    user_input = 32333333333331
     s = time.perf_counter_ns()
     factors = shor(user_input)
     e = time.perf_counter_ns()
