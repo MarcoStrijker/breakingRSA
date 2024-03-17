@@ -4,16 +4,14 @@ use std::collections::HashSet;
 use lazy_static::lazy_static;
 
 use pyo3::prelude::*;
-use pyo3::wrap_pyfunction;
 
 extern crate num_integer;
 
-
 // This is a global variable that will be used to store the memorization of the prime numbers
 lazy_static! {
-    static ref MEMORIZATION_PRIME: std::sync::Mutex<HashMap<u64, bool>> = std::sync::Mutex::new(HashMap::<u64, bool>::new());
+    static ref MEMORIZATION_PRIME: std::sync::Mutex<HashMap<u64, bool>> =
+        std::sync::Mutex::new(HashMap::<u64, bool>::new());
 }
-
 
 fn create_hashset_from_single_number(number: u64) -> HashSet<u64> {
     // Create a hashset from a single number
@@ -23,9 +21,8 @@ fn create_hashset_from_single_number(number: u64) -> HashSet<u64> {
     //
     // # Returns
     // * `HashSet` - A hashset with the number
-    return HashSet::<u64>::from([number])
+    return HashSet::<u64>::from([number]);
 }
-
 
 fn create_hashset_from_numbers(num1: u64, num2: u64) -> HashSet<u64> {
     // Create a hashset from two numbers
@@ -36,9 +33,8 @@ fn create_hashset_from_numbers(num1: u64, num2: u64) -> HashSet<u64> {
     //
     // # Returns
     // * `HashSet` - A hashset with the numbers
-    return HashSet::<u64>::from([num1, num2])
+    return HashSet::<u64>::from([num1, num2]);
 }
-
 
 fn extend_hashset_with_number(mut set: HashSet<u64>, number: u64) -> HashSet<u64> {
     // Extend the first hashset with the second hashset
@@ -50,21 +46,20 @@ fn extend_hashset_with_number(mut set: HashSet<u64>, number: u64) -> HashSet<u64
     // # Returns
     // * `HashSet` - The first hashset extended with the second hashset
     set.insert(number);
-    return set
+    return set;
 }
 
-
 fn _is_prime(number: u64) -> bool {
-    /// Check if a number is prime
-    ///
-    /// # Arguments
-    /// * `number` - The number to check if it is prime (u64)
-    ///
-    /// # Returns
-    /// * `bool` - True if the number is prime, False otherwise
-    ///
+    // Check if a number is prime
+    //
+    // # Arguments
+    // * `number` - The number to check if it is prime (u64)
+    //
+    // # Returns
+    // * `bool` - True if the number is prime, False otherwise
+
     if number < 2 {
-        return false
+        return false;
     }
 
     // If the number is already in the memorization, return the result
@@ -80,9 +75,8 @@ fn _is_prime(number: u64) -> bool {
     }
 
     MEMORIZATION_PRIME.lock().unwrap().insert(number, true);
-    return true
+    return true;
 }
-
 
 fn make_guess(number: u64, mut guess: u64) -> u64 {
     // Make a initial guess
@@ -95,12 +89,11 @@ fn make_guess(number: u64, mut guess: u64) -> u64 {
     // * `u64` - The initial guess
     loop {
         if num_integer::gcd(number, guess) == 1 {
-            return guess
+            return guess;
         }
         guess += 1
     }
 }
-
 
 fn mod_exp(base: u64, exponent: u64, modulus: u64) -> Option<u64> {
     // Calculate the modular exponentiation
@@ -116,7 +109,7 @@ fn mod_exp(base: u64, exponent: u64, modulus: u64) -> Option<u64> {
     // If the modulus is less than or equal to 1, return None
     // This prevents a division by zero
     if modulus <= 1 {
-        return None
+        return None;
     }
 
     let mut result: u64 = 1;
@@ -124,7 +117,7 @@ fn mod_exp(base: u64, exponent: u64, modulus: u64) -> Option<u64> {
     let mut exponent: u64 = exponent;
 
     loop {
-        if exponent <= 0 {
+        if exponent == 0 {
             break;
         }
 
@@ -132,14 +125,12 @@ fn mod_exp(base: u64, exponent: u64, modulus: u64) -> Option<u64> {
             result = (result * base) % modulus;
         }
 
-        exponent = exponent >> 1;
+        exponent >>= 1;
         base = (base * base) % modulus;
     }
 
-    return Some(result)
+    return Some(result);
 }
-
-
 
 fn calculate_exponent(guess: u64) -> u64 {
     let mut r: u64 = 2;
@@ -150,13 +141,12 @@ fn calculate_exponent(guess: u64) -> u64 {
 
     loop {
         if g > 1 || r % 2 != 0 {
-            return r
+            return r;
         }
         r += 2;
         g = guess.pow(r.try_into().unwrap());
     }
 }
-
 
 fn find_factors(number: u64, guess: u64, exponent: u64) -> Option<u64> {
     // Find the factors of a number
@@ -175,16 +165,15 @@ fn find_factors(number: u64, guess: u64, exponent: u64) -> Option<u64> {
     // Loop until the outcome is not the number or 1 and the outcome is a prime
     loop {
         if outcome != number && outcome != 1 && _is_prime(number / outcome) {
-            return Some(number / outcome)
+            return Some(number / outcome);
         }
         if den == 0 {
-            return None
+            return None;
         }
         (nom, den) = (den, nom % den);
         outcome = num_integer::gcd(nom, den);
     }
 }
-
 
 pub fn _shor(number: u64) -> HashSet<u64> {
     // Find the prime factors of a number
@@ -205,10 +194,7 @@ pub fn _shor(number: u64) -> HashSet<u64> {
     // plus the other prime factor of the number divided by 2
     // For this we recursively call the function with the number divided by 2
     if number % 2 == 0 {
-        return extend_hashset_with_number(
-            _shor(number / 2),
-            2
-        )
+        return extend_hashset_with_number(_shor(number / 2), 2);
     }
 
     // Starting guess process by defining the variables
@@ -228,24 +214,20 @@ pub fn _shor(number: u64) -> HashSet<u64> {
         // current guess + 1
         if f <= 1 {
             g += 1;
-            continue
+            continue;
         }
 
         // When the second factor is a prime
         // We can return the two prime factors
         if _is_prime(number / f) {
-            return create_hashset_from_numbers(f, number / f)
+            return create_hashset_from_numbers(f, number / f);
         }
 
         // When the second factor is not a prime
         // We recursively call the function with the second factor
-        return extend_hashset_with_number(
-            _shor(number / f),
-            f
-        )
+        return extend_hashset_with_number(_shor(number / f), f);
     }
 }
-
 
 #[pyfunction]
 fn shor(_py: Python, number: u64) -> PyResult<HashSet<u64>> {
@@ -259,7 +241,6 @@ fn shor(_py: Python, number: u64) -> PyResult<HashSet<u64>> {
     Ok(_shor(number))
 }
 
-
 #[pyfunction]
 fn is_prime(_py: Python, number: u64) -> PyResult<bool> {
     // Wrap the _is_prime function to be used in Python
@@ -272,9 +253,8 @@ fn is_prime(_py: Python, number: u64) -> PyResult<bool> {
     Ok(_is_prime(number))
 }
 
-
 #[pymodule]
-#[pyo3(name="main")]
+#[pyo3(name = "main")]
 fn module(_py: Python, m: &PyModule) -> PyResult<()> {
     // Create a Python module with the functions
     //
@@ -287,7 +267,6 @@ fn module(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(is_prime, m)?)?;
     Ok(())
 }
-
 
 #[cfg(test)]
 mod tests {
