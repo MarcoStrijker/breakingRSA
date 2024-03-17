@@ -30,7 +30,7 @@ def is_prime(number: int) -> int:
         return _memorization_prime[number]
 
     if number < 2:
-        return False
+        return 0
 
     for i in range(2, int(number ** 0.5) + 1):
         if number % i == 0:
@@ -58,11 +58,10 @@ def make_guess(number: int, guess: int) -> int:
     return guess
 
 
-def calculate_exponent(number: int, guess: int) -> int:
+def calculate_exponent(guess: int) -> int:
     """Calculate the exponent for the factors of a number.
 
     Args:
-        number (int): The number for which the factors should be found.
         guess (int): The guess for the factors.
 
     Returns:
@@ -70,11 +69,11 @@ def calculate_exponent(number: int, guess: int) -> int:
 
     """
     r = 2
-    g = pow(guess, r, 1 if number < 100 else number)
-    while g == 1 and r % 2 == 0:
+    g = pow(guess, r)
+    while g <= 1 and r % 2 == 0:
         r += 2
-        g = pow(guess, r, number)
-
+        g = pow(guess, r)
+        
     return r
 
 
@@ -129,20 +128,15 @@ def shor(number: int) -> set[int]:
 
     # If the number is even, the prime factors are 2 and the prime factors of the other number
     if number % 2 == 0:
-        result = {2}
-        result.update(shor(number // 2))
-        return result
+        return {2, *shor(number // 2)}
 
     # Staring with a guess of 3
     g = 3
 
     # Start the loop to find the prime factors
     while True:
-        # if g > number:
-        #     return {number}
-
         g = make_guess(number, g)
-        r = calculate_exponent(number, g)
+        r = calculate_exponent(g)
 
         # This is in a try-except block because the pow function can raise
         # a ZeroDivisionError or OverflowError. This means that it is not
@@ -168,13 +162,12 @@ def shor(number: int) -> set[int]:
         # When the second factor is not a prime
         # Recursively find the prime factors of the other number
         # We return the set of the unique primes
-        result = {f}
-        result.update(shor(number // f))
-        return result
+        return {f, *shor(number // f)}
 
 
 if __name__ == "__main__":
     user_input = int(input("Enter a number: "))
+    user_input = 32333333333331
     s = time.perf_counter_ns()
     factors = shor(user_input)
     e = time.perf_counter_ns()
