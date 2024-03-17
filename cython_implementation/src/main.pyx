@@ -1,5 +1,7 @@
+# cython: language_level=3str, boundscheck=False, wraparound=False, nonecheck=False, infer_types=False, profile=False, cdivision=False
+
 """
-Python implementation of the RSA encryption algorithm.
+Cython implementation of the RSA encryption algorithm.
 
 The RSA algorithm is a public-key encryption algorithm that is based on the
 difficulty of factoring large integers.
@@ -7,25 +9,25 @@ difficulty of factoring large integers.
 """
 
 import time
-import math
+from math import gcd
 
+from libc.math cimport sqrt
 
-_memorization_prime = {}
-"""The dictionary that stores the prime numbers. 
+cdef dict _memorization_prime = {}
+"""The dictionary that stores the prime numbers.
 This is used to speed up the process of finding the prime factors of a number."""
 
 
-def is_prime(number: int) -> int:
+cpdef bint is_prime(unsigned long long number):
     """Check if a number is prime. Stores result in a dictionary to speed up the process.
 
     Args:
-        number (int): The number to check if it is prime.
+        number (unsigned long long): The number to check if it is prime.
 
     Returns:
         A zero of a one, representing a boolean
     """
 
-    # Lookup if the number is previously marked as prime/not prime
     if number in _memorization_prime:
         return _memorization_prime[number]
 
@@ -34,7 +36,7 @@ def is_prime(number: int) -> int:
     if number < 2:
         return 0
 
-    for i in range(2, int(number ** 0.5) + 1):
+    for i in range(2, int(sqrt(number)) + 1):
         if number % i == 0:
             _memorization_prime[number] = 0
             return 0
@@ -43,49 +45,49 @@ def is_prime(number: int) -> int:
     return 1
 
 
-def make_guess(number: int, guess: int) -> int:
+cdef unsigned long long make_guess(unsigned long long number, unsigned long long guess):
     """Make a guess to determine the factors of a number.
 
     Args:
-        number (int): The number for which the factors should be found.
-        guess (int): The guess for the factors.
+        number (unsigned long long): The number for which the factors should be found.
+        guess (unsigned long long): The guess for the factors.
 
     Returns:
         A guess for the factors of the number.
 
     """
-    while math.gcd(number, guess) != 1:
+    while gcd(number, guess) != 1:
         guess += 1
-
     return guess
 
 
-def calculate_exponent(guess: int) -> int:
+cdef unsigned long long calculate_exponent(unsigned long long guess):
     """Calculate the exponent for the factors of a number.
 
     Args:
-        guess (int): The guess for the factors.
+        guess (unsigned long long): The guess for the factors.
 
     Returns:
         The exponent for the factors of the number.
 
     """
-    r = 2
-    g = pow(guess, r)
+    cdef unsigned long long r = 2
+    cdef unsigned long long g = guess ** r
+
     while g <= 1 and r % 2 == 0:
         r += 2
-        g = pow(guess, r)
-        
+        g = guess ** r
+
     return r
 
 
-def find_factors(number: int, guess: int, exponent: int) -> tuple[int, int]:
+cdef tuple find_factors(unsigned long long number, unsigned long long guess, unsigned long long exponent):
     """Find the factors for a number. the output is always a prime.
 
     Args:
-        number (int): The number for which the factors should be found.
-        guess (int): The guess for the factors.
-        exponent (int): The exponent for the factors.
+        number (unsigned long long): The number for which the factors should be found.
+        guess (unsigned long long): The guess for the factors.
+        exponent (unsigned long long): The exponent for the factors.
 
     Returns:
         The factors of the number.
@@ -94,27 +96,25 @@ def find_factors(number: int, guess: int, exponent: int) -> tuple[int, int]:
         ZeroDivisionError: If the number is 0.
         OverflowError: If the number is too large.
     """
-
-    nom = pow(guess, exponent // 2, number) + 1
-    den = number
-
-    outcome = math.gcd(nom, den)
+    cdef unsigned long long nom = pow(guess, exponent // 2, number) + 1
+    cdef unsigned long long den = number
+    cdef unsigned long long outcome = gcd(nom, den)
 
     while (outcome == number
            or outcome == 1
            or not is_prime(number // outcome)):
         nom, den = den, nom % den
-        outcome = math.gcd(nom, den)
+        outcome = gcd(nom, den)
 
     return number // outcome, number // (number // outcome)
 
 
-def shor(number: int) -> set[int]:
+cpdef shor(unsigned long long number):
     """ Finding the prime factors of a number. For example, the prime factors of 15 are 3 and 5.
     This is for breaking the RSA encryption algorithm.
 
     Args:
-        number (int): The number for which the prime factors should be found.
+        number (unsigned long long): The number for which the prime factors should be found.
 
     Returns:
         The prime factors of the number.
@@ -130,9 +130,8 @@ def shor(number: int) -> set[int]:
         return {2, *shor(number // 2)}
 
     # Staring with a guess of 3
-    g = 3
+    cdef unsigned long long g = 3
 
-    # Start the loop to find the prime factors
     while True:
         g = make_guess(number, g)
         r = calculate_exponent(g)
@@ -165,7 +164,7 @@ def shor(number: int) -> set[int]:
 
 
 if __name__ == "__main__":
-    user_input = 32333333333331
+    user_input = int(input("Enter a number: "))
     s = time.perf_counter_ns()
     factors = shor(user_input)
     e = time.perf_counter_ns()
