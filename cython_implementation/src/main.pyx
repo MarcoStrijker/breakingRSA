@@ -13,7 +13,7 @@ from math import gcd
 
 from libc.math cimport sqrt
 
-cdef dict _memorization_prime = {}
+cdef dict _memorization_prime = {0: 0, 1: 0}
 """The dictionary that stores the prime numbers.
 This is used to speed up the process of finding the prime factors of a number."""
 
@@ -30,11 +30,6 @@ cpdef bint is_prime(unsigned long long number):
 
     if number in _memorization_prime:
         return _memorization_prime[number]
-
-    # Perform check after lookup since most evaluations will be
-    # for numbers higher than 1
-    if number < 2:
-        return 0
 
     for i in range(2, int(sqrt(number)) + 1):
         if number % i == 0:
@@ -100,9 +95,10 @@ cdef tuple find_factors(unsigned long long number, unsigned long long guess, uns
     cdef unsigned long long den = number
     cdef unsigned long long outcome = gcd(nom, den)
 
-    while (outcome == number
-           or outcome == 1
-           or not is_prime(number // outcome)):
+    if outcome == number or outcome == 1:
+        return 1, 1
+
+    while not is_prime(number // outcome):
         nom, den = den, nom % den
         outcome = gcd(nom, den)
 
@@ -130,7 +126,7 @@ cpdef shor(unsigned long long number):
         return {2, *shor(number // 2)}
 
     # Staring with a guess of 3
-    cdef unsigned long long g = 3
+    cdef unsigned long long g = number // 100 + 3
 
     while True:
         g = make_guess(number, g)

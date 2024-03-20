@@ -10,7 +10,7 @@ import time
 import math
 
 
-_memorization_prime = {}
+_memorization_prime = {0: 0, 1: 0}
 """The dictionary that stores the prime numbers. 
 This is used to speed up the process of finding the prime factors of a number."""
 
@@ -28,11 +28,6 @@ def is_prime(number: int) -> int:
     # Lookup if the number is previously marked as prime/not prime
     if number in _memorization_prime:
         return _memorization_prime[number]
-
-    # Perform check after lookup since most evaluations will be
-    # for numbers higher than 1
-    if number < 2:
-        return 0
 
     for i in range(2, int(number ** 0.5) + 1):
         if number % i == 0:
@@ -72,10 +67,11 @@ def calculate_exponent(guess: int) -> int:
     """
     r = 2
     g = pow(guess, r)
+
     while g <= 1 and r % 2 == 0:
         r += 2
         g = pow(guess, r)
-        
+
     return r
 
 
@@ -99,10 +95,10 @@ def find_factors(number: int, guess: int, exponent: int) -> tuple[int, int]:
     den = number
 
     outcome = math.gcd(nom, den)
+    if outcome == number or outcome == 1:
+        return 1, 0
 
-    while (outcome == number
-           or outcome == 1
-           or not is_prime(number // outcome)):
+    while not is_prime(number // outcome):
         nom, den = den, nom % den
         outcome = math.gcd(nom, den)
 
@@ -130,7 +126,7 @@ def shor(number: int) -> set[int]:
         return {2, *shor(number // 2)}
 
     # Staring with a guess of 3
-    g = 3
+    g = number // 100 + 3
 
     # Start the loop to find the prime factors
     while True:
@@ -165,7 +161,8 @@ def shor(number: int) -> set[int]:
 
 
 if __name__ == "__main__":
-    user_input = 32333333333331
+    user_input = 325784122923
+
     s = time.perf_counter_ns()
     factors = shor(user_input)
     e = time.perf_counter_ns()
