@@ -200,7 +200,7 @@ pub fn _shor(number: u64) -> HashSet<u64> {
     // Starting guess process by defining the variables
     // for the guess, the exponent and the factors
     // Staring with a guess of 3
-    let mut g: u64 = 3;
+    let mut g: u64 = number / 10 + 3;
     let mut r: u64;
     let mut f: u64;
 
