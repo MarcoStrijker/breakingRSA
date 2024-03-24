@@ -1,5 +1,5 @@
 # cython: language_level=3str, boundscheck=False, wraparound=False, nonecheck=False, infer_types=False, profile=False, cdivision=False
-
+# distutils: language=c++
 """
 Cython implementation of the RSA encryption algorithm.
 
@@ -13,9 +13,16 @@ from math import gcd
 
 from libc.math cimport sqrt
 
-cdef dict _memorization_prime = {0: 0, 1: 0}
+from libcpp.unordered_map cimport unordered_map
+
+
+cdef unordered_map[unsigned long long, bint] _memorization_prime
 """The dictionary that stores the prime numbers.
 This is used to speed up the process of finding the prime factors of a number."""
+
+
+_memorization_prime[0] = 0
+_memorization_prime[1] = 0
 
 
 cpdef bint is_prime(unsigned long long number):
@@ -28,7 +35,7 @@ cpdef bint is_prime(unsigned long long number):
         A zero of a one, representing a boolean
     """
 
-    if number in _memorization_prime:
+    if _memorization_prime.find(number) != _memorization_prime.end():
         return _memorization_prime[number]
 
     for i in range(2, int(sqrt(number)) + 1):
