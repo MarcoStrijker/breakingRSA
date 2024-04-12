@@ -5,6 +5,7 @@ __pycache__/
 
 # C extensions
 *.so
+*.dll
 
 # Distribution / packaging
 .Python
@@ -177,4 +178,5 @@ Cargo.lock
 
 
 # Cython ignores
-cython_implementation/src/*.c
+cython_implementation/src/*.cpp
+

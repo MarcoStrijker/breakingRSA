@@ -346,6 +346,12 @@ Set* shor(u64 number) {
 
   // Only factors can be found for values higher than 2
   // When the number itself is a prime, we just return the number and 1
+  if (memorization_prime == NULL) {
+    memorization_prime = create_dict();
+    add_to_dict(memorization_prime, 0, 0);
+    add_to_dict(memorization_prime, 1, 0);
+  }
+
   if (number < 2 || is_prime(number)) {
     return initialize_set_with_single_item(number);
   }
@@ -380,6 +386,7 @@ Set* shor(u64 number) {
     return add_u64_to_set(shor(factors[1]), factors[0]);
   }
 }
+
 
 int main() {
   memorization_prime = create_dict();
