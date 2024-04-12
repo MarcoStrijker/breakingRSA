@@ -1,3 +1,6 @@
+"""This module acts as wrapper for the c code. It handles the conversion of the pointer to
+a Python set and the freeing of the memory."""
+
 from ctypes import CDLL, POINTER, Structure, c_uint64, c_uint8
 
 
