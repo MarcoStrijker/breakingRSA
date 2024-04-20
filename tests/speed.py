@@ -8,8 +8,12 @@ takes to run the implementations.
 
 import time
 
+import setup
+setup.run()
+
 from python.src.main import shor as python_implementation
 from cython_implementation.src.main import shor as cython_implementation
+from c_implementation.src.main import shor as c_implementation
 from rust.src.main import shor as rust_implementation
 
 
@@ -65,5 +69,6 @@ if __name__ == "__main__":
     test_suites(
         python=python_implementation,
         cython=cython_implementation,
+        c=c_implementation,
         rust=rust_implementation,
     )
