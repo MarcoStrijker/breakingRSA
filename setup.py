@@ -30,7 +30,7 @@ __compiled = False
 # Define the commands per implementation
 COMMANDS = {
     "Cython": rf"cythonize --3str --no-docstrings -i cython_implementation\src\*.pyx",
-    "Rust": r"cd rust && maturin develop --release --strip --skip-install",
+    "Rust": r"cd rust && maturin develop --release --strip --skip-install --bindings pyo3",
     "C": r"cd c_implementation\src && gcc -shared -o main.dll main.c"
 }
 
@@ -39,12 +39,15 @@ COMMANDS = {
 # this enables maturin to find Python
 os.environ["PYO3_PYTHON"] = sys.executable
 
+# Set the working directory to the root of the project
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
 
 class StoutCollector:
     """ If setup is called with --verbose, this collector will collect the stdout"""
     def __enter__(self):
         """"Disables the stdout (if verbose is off)"""
-        if args.verbose:
+        if not args.verbose:
             sys.stdout = None
             sys.stderr = None
 
@@ -62,6 +65,10 @@ def compile_code(implementation: str, command: str) -> None:
         command (str): The command to run
 
     """
+
+    if not args.verbose:
+        command += " > NUL 2>&1"
+
     # Compile the Cython code
     with StoutCollector():
         exit_code = os.system(command)
