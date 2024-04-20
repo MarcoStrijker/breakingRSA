@@ -10,7 +10,7 @@ extern crate num_integer;
 // This is a global variable that will be used to store the memorization of the prime numbers
 lazy_static! {
     static ref MEMORIZATION_PRIME: std::sync::Mutex<HashMap<u64, bool>> =
-        std::sync::Mutex::new(HashMap::<u64, bool>::new());
+        std::sync::Mutex::new(HashMap::<u64, bool>::from_iter([(0, false), (1, false)]));
 }
 
 fn create_hashset_from_single_number(number: u64) -> HashSet<u64> {
@@ -57,10 +57,6 @@ fn _is_prime(number: u64) -> bool {
     //
     // # Returns
     // * `bool` - True if the number is prime, False otherwise
-
-    if number < 2 {
-        return false;
-    }
 
     // If the number is already in the memorization, return the result
     if let Some(result) = MEMORIZATION_PRIME.lock().unwrap().get(&number) {
@@ -148,7 +144,7 @@ fn calculate_exponent(guess: u64) -> u64 {
     }
 }
 
-fn find_factors(number: u64, guess: u64, exponent: u64) -> Option<u64> {
+fn find_factors(number: u64, guess: u64, exponent: u64) -> u64 {
     // Find the factors of a number
     //
     // # Arguments
@@ -162,13 +158,17 @@ fn find_factors(number: u64, guess: u64, exponent: u64) -> Option<u64> {
     let mut den: u64 = number;
     let mut outcome: u64 = num_integer::gcd(nom, den);
 
+    if outcome == number || outcome == 1 {
+        return 0;
+    }
+
     // Loop until the outcome is not the number or 1 and the outcome is a prime
     loop {
-        if outcome != number && outcome != 1 && _is_prime(number / outcome) {
-            return Some(number / outcome);
+        if _is_prime(number / outcome) {
+            return number / outcome;
         }
         if den == 0 {
-            return None;
+            return 0;
         }
         (nom, den) = (den, nom % den);
         outcome = num_integer::gcd(nom, den);
@@ -186,7 +186,7 @@ pub fn _shor(number: u64) -> HashSet<u64> {
 
     // Only factors can be found for values higher than 2
     // When the number itself is a prime, we just return the number and 1
-    if number < 2 || _is_prime(number) {
+    if number <= 2 || _is_prime(number) {
         return create_hashset_from_single_number(number);
     }
 
@@ -200,14 +200,14 @@ pub fn _shor(number: u64) -> HashSet<u64> {
     // Starting guess process by defining the variables
     // for the guess, the exponent and the factors
     // Staring with a guess of 3
-    let mut g: u64 = 3;
+    let mut g: u64 = number / 10 + 3;
     let mut r: u64;
     let mut f: u64;
 
     loop {
         g = make_guess(number, g);
         r = calculate_exponent(g);
-        f = find_factors(number, g, r).unwrap_or_default();
+        f = find_factors(number, g, r);
 
         // When the second factor is zero
         // The guess was not correct, restart loop with
