@@ -31,7 +31,8 @@ __compiled = False
 COMMANDS = {
     "Cython": rf"cythonize --3str --no-docstrings -i cython_implementation\src\*.pyx",
     "Rust": r"cd rust && maturin develop --release --strip --skip-install --bindings pyo3",
-    "C": r"cd c_implementation\src && gcc -shared -o main.dll main.c"
+    "C": r"cd c_implementation\src && gcc -shared -o main.dll main.c",
+    "Mypyc": r"cd mypyc_implementation\src && mypyc ..\..\python\src\main.py",
 }
 
 
@@ -41,20 +42,6 @@ os.environ["PYO3_PYTHON"] = sys.executable
 
 # Set the working directory to the root of the project
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
-
-class StoutCollector:
-    """ If setup is called with --verbose, this collector will collect the stdout"""
-    def __enter__(self):
-        """"Disables the stdout (if verbose is off)"""
-        if not args.verbose:
-            sys.stdout = None
-            sys.stderr = None
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """Resets the output"""
-        sys.stdout = sys.__stdout__
-        sys.stderr = sys.__stderr__
 
 
 def compile_code(implementation: str, command: str) -> None:
@@ -70,8 +57,7 @@ def compile_code(implementation: str, command: str) -> None:
         command += " > NUL 2>&1"
 
     # Compile the Cython code
-    with StoutCollector():
-        exit_code = os.system(command)
+    exit_code = os.system(command)
 
     if exit_code == 0:
         return
@@ -83,12 +69,15 @@ def compile_code(implementation: str, command: str) -> None:
     __error = True
 
 
-def run() -> None:
+def run(verbose: bool = False) -> None:
     """Runs the script and compiles the code."""
-    global __compiled
+    global __compiled, args
 
     if __compiled:
         return
+
+    # Set the verbose flag
+    args.verbose = verbose
 
     # Run all commands
     for impl, com in COMMANDS.items():
@@ -111,4 +100,4 @@ argparse.add_argument(
 args = argparse.parse_args()
 
 if __name__ == "__main__":
-    run()
+    run(args.verbose)
