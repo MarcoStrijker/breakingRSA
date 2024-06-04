@@ -4,7 +4,7 @@ use std::time::Instant;
 use shors_algorithm::_shor;
 
 fn main() {
-    let user_input: u64 = 92349678913456;
+    let user_input: u64 = 12345678912345678;
 
     let s = Instant::now();
     let set: HashSet<u64> = _shor(user_input);

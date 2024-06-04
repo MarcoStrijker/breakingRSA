@@ -284,7 +284,7 @@ u64 calculate_exponent(u64 guess) {
   u64 r = 2;
   u64 g = pow(guess, r);
 
-  while (g <= 1 && r % 2 == 0) {
+  while (g <= 1) {
     r += 2;
     g = pow(guess, r);
   }
@@ -398,7 +398,7 @@ int main() {
   // This will be used as input for the shor function.
   // printf("Please enter a number: \n");
 
-  const u64 number = 92349678913456;
+  const u64 number = 12345678912345678;
 
   // scanf("%d", &number);
   time_t start = clock();

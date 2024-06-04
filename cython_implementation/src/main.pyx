@@ -76,7 +76,7 @@ cdef unsigned long long calculate_exponent(unsigned long long guess):
     cdef unsigned long long r = 2
     cdef unsigned long long g = guess ** r
 
-    while g <= 1 and r % 2 == 0:
+    while g <= 1:
         r += 2
         g = guess ** r
 

@@ -68,7 +68,7 @@ def calculate_exponent(guess: int) -> int:
     r = 2
     g = pow(guess, r)
 
-    while g <= 1 and r % 2 == 0:
+    while g <= 1:
         r += 2
         g = pow(guess, r)
 
