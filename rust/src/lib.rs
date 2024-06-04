@@ -83,12 +83,10 @@ fn make_guess(number: u64, mut guess: u64) -> u64 {
     //
     // # Returns
     // * `u64` - The initial guess
-    loop {
-        if num_integer::gcd(number, guess) == 1 {
-            return guess;
-        }
+    while num_integer::gcd(number, guess) != 1 {
         guess += 1
     }
+    return guess
 }
 
 fn mod_exp(base: u64, exponent: u64, modulus: u64) -> Option<u64> {
@@ -131,12 +129,10 @@ fn mod_exp(base: u64, exponent: u64, modulus: u64) -> Option<u64> {
 fn calculate_exponent(guess: u64) -> u64 {
     let mut r: u64 = 2;
 
-    // Guess to the power of exponent
     let mut g: u64 = guess.pow(r.try_into().unwrap());
-    // mod_exp(guess, r, if number < 100 {1} else {number}).unwrap_or_default();
 
     loop {
-        if g > 1 || r % 2 != 0 {
+        if g > 1 {
             return r;
         }
         r += 2;
@@ -324,7 +320,7 @@ mod tests {
         let number = 15;
         let guess = 4;
         let exponent = 2;
-        assert_eq!(find_factors(number, guess, exponent).unwrap(), 3);
+        assert_eq!(find_factors(number, guess, exponent), 3);
     }
 
     #[test]
