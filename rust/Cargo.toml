@@ -9,6 +9,7 @@ edition = "2021"
 num-integer = "0.1.46"
 lazy_static = "1.4.0"
 mod_exp = "1.0.1"
+num-bigfloat = "1.7.1"
 
 [dependencies.pyo3]
 version = "0.20.3"
