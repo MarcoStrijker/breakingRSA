@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use num_integer::Roots;
+use num_integer::{gcd, Roots};
 use memoize::memoize;
 
 use pyo3::prelude::*;
@@ -13,6 +13,7 @@ use pyo3::prelude::*;
 ///
 /// # Returns
 /// * `bool` - True if the number is prime, False otherwise
+
 #[memoize]
 fn is_prime(number: u128) -> bool {
     if number % 2 == 0 {
@@ -21,13 +22,15 @@ fn is_prime(number: u128) -> bool {
         return number == 2
     }
 
-    // println!("{:?}", (3..=20).step_by(2));
-
-    for i in (3..=number.sqrt())
+    for i in (3..10)
         .step_by(2)
-        .filter(|x| x % 3 != 0 && *x != 3)
-        .filter(|x| x % 5 != 0 && *x != 5)
-        .filter(|x| x % 7 != 0 && *x != 7)
+        .chain(
+            (11..=number.sqrt())
+            .step_by(2)
+            .filter(|x| x % 3 != 0)
+            .filter(|x| x % 5 != 0)
+            .filter(|x| x % 7 != 0)
+        )
     {
         if number % i == 0 {
             return false;
