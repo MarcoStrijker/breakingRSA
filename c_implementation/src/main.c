@@ -191,13 +191,6 @@ i8 is_prime(u64 number) {
   // Returns:
   //     unsigned long long: 1 if the number is prime, 0 otherwise.
 
-  if (number % 2 == 0 || number == 1) {
-    // When the number is dividable by two, it is never
-    // a prime, except when it is two
-    return number == 2;
-  }
-
-
   i8 mem = get_from_dict(memorization_prime, number);
 
   // If mem is negative one, it means the number is not in the dictionary
@@ -205,12 +198,12 @@ i8 is_prime(u64 number) {
     return mem;
   }
 
-  if (number % 3 == 0 || number % 5 == 0 || number % 7 == 0) {
+  if (number % 2 == 0 | number % 3 == 0 || number % 5 == 0 || number % 7 == 0) {
     return 0;
   }
 
-  for (u64 i = 2; i <= sqrt(number); i+=2) {
-    if (i % 3 != 0 || i % 5 != 0 || i % 7 != 0) {
+  for (u64 i = 11; i <= sqrt(number); i+=2) {
+    if (i % 3 == 0 || i % 5 == 0 || i % 7 == 0) {
       continue;
     }
 
@@ -240,8 +233,7 @@ Set* find_prime_factors(u64 number) {
     return initialize_set_with_single_item(number);
   }
 
-  Set* factors = create_set(5);
-  u64 g = 3;
+  Set* factors = create_set(1);
 
   if (number % 2 == 0) {
     factors = add_u64_to_set(factors, 2);
@@ -252,6 +244,7 @@ Set* find_prime_factors(u64 number) {
     }
   }
 
+
   for (u64 g = 3; number != 1; g += 2) {
     if (number % g == 0) {
       factors = add_u64_to_set(factors, g);
@@ -259,34 +252,9 @@ Set* find_prime_factors(u64 number) {
       continue;
     } 
   
-    if (is_prime(g)) {
+    if (is_prime(number)) {
       factors = add_u64_to_set(factors, number);
       break;
     }
   }
-}
-
-
-int main() {
-
-
-  // Add way user can input number at runtime
-  // The user can input a number for which the prime factors should be found.
-  // This will be used as input for the shor function.
-  // printf("Please enter a number: \n");
-
-  const u64 number = 12345678912345678;
-
-  // scanf("%d", &number);
-  time_t start = clock();
-  Set* a = shor(number);
-
-  time_t end = clock();
-
-  printf("The prime factors of %llu are: \n", number);
-  for (u8 i = 0; i < a->size; i++) {
-    printf("%llu\n ", a->items[i]);
-  }
-  printf("\n Time taken: %f\n", (double)(end - start) / CLOCKS_PER_SEC);
-  return 0;
 }
