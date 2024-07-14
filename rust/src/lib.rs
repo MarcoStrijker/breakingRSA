@@ -1,36 +1,39 @@
 use std::collections::HashSet;
 
-use num_integer::{gcd, Roots};
+use num_integer::Roots;
 use memoize::memoize;
 
 use pyo3::prelude::*;
 
 
-/// Check if a number is prime
+/// Check if a number is prime. Uses memoization.
 ///
 /// # Arguments
-/// * `number` - The number to check if it is prime (u128)
+/// * `number` - The number to check if it is prime (u64)
 ///
 /// # Returns
 /// * `bool` - True if the number is prime, False otherwise
-
 #[memoize]
-fn is_prime(number: u128) -> bool {
-    if number % 2 == 0 {
+fn is_prime(number: u64) -> bool {
+    if number % 2 == 0 || number == 1 {
         // When the number is dividable by two, it is never
         // a prime, except when it is two
         return number == 2
     }
 
-    for i in (3..10)
+    if number == 3 || number == 5 || number == 7 {
+        return true
+    }
+
+    if number % 3 == 0 || number % 5 == 0 || number % 7 == 0 {
+        return false
+    }
+
+    for i in (11..=number.sqrt())
         .step_by(2)
-        .chain(
-            (11..=number.sqrt())
-            .step_by(2)
-            .filter(|x| x % 3 != 0)
-            .filter(|x| x % 5 != 0)
-            .filter(|x| x % 7 != 0)
-        )
+        .filter(|x| x % 3 != 0)
+        .filter(|x| x % 5 != 0)
+        .filter(|x| x % 7 != 0)
     {
         if number % i == 0 {
             return false;
@@ -41,13 +44,13 @@ fn is_prime(number: u128) -> bool {
 }
 
 
-pub fn find_prime_factors(mut number: u128) -> HashSet<u128> {
-    let mut g: u128 = 3;
-    let mut factors: HashSet<u128> = HashSet::<u128>::new();
+pub fn _find_prime_factors(mut number: u64) -> HashSet<u64> {
+    let mut g: u64 = 3;
+    let mut factors: HashSet<u64> = HashSet::<u64>::new();
 
     // If the number itself is a prime, just return the number
-    if is_prime(number) {
-        return HashSet::<u128>::from([number]);
+    if number <= 2 || is_prime(number) {
+        return HashSet::<u64>::from([number]);
     }
 
     // If divisible by two, we first will divide the number
@@ -70,6 +73,7 @@ pub fn find_prime_factors(mut number: u128) -> HashSet<u128> {
         if number % g == 0 {
             factors.insert(g);
             number /= g;
+            continue
         }
 
         // If number is prime, it should end the loop and add the
@@ -88,16 +92,17 @@ pub fn find_prime_factors(mut number: u128) -> HashSet<u128> {
 }
 
 
+
 /// Wrap the find_prime_factors
 ///
 /// # Arguments
 /// * `number` - The number to find the prime factors for
 ///
 /// # Returns
-/// * `PyResult<HashSet<u128>>` - The prime factors of the number
+/// * `PyResult<HashSet<u64>>` - The prime factors of the number
 #[pyfunction]
-fn find_prime_factors_python(_py: Python, number: u128) -> PyResult<HashSet<u128>> {
-    Ok(find_prime_factors(number))
+fn find_prime_factors(_py: Python, number: u64) -> PyResult<HashSet<u64>> {
+    Ok(_find_prime_factors(number))
 }
 
 
@@ -111,6 +116,6 @@ fn find_prime_factors_python(_py: Python, number: u128) -> PyResult<HashSet<u128
 #[pymodule]
 #[pyo3(name = "main")]
 fn module(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(find_prime_factors_python, m)?)?;
+    m.add_function(wrap_pyfunction!(find_prime_factors, m)?)?;
     Ok(())
 }
