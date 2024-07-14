@@ -7,166 +7,90 @@ difficulty of factoring large integers.
 """
 
 import time
-import math
+from math import sqrt
 
-
-_memorization_prime = {0: 0, 1: 0}
+_memorization_prime: dict[int, bool] = {0: True, 1: True, 2: True, 3: True, 5: True, 7: True}
 """The dictionary that stores the prime numbers. 
 This is used to speed up the process of finding the prime factors of a number."""
 
 
-def is_prime(number: int) -> int:
+def divisible_by_357(x: int) -> bool:
+    """Check if a number is divisible by 3, 5, or 7.
+
+    Args:
+        x (int): The number to check if it is divisible by 3, 5, or 7.
+
+    Returns:
+        If the number is divisible by 3, 5, or 7.
+    """
+    return x % 3 != 0 and x % 5 != 0 and x % 7 != 0
+
+
+def is_prime(number: int) -> bool:
     """Check if a number is prime. Stores result in a dictionary to speed up the process.
 
     Args:
-        number (int): The number to check if it is prime.
+        number (unsigned long long): The number to check if it is prime.
 
     Returns:
         A zero of a one, representing a boolean
     """
+    if number % 2 == 0:
+        return number == 2
 
-    # Lookup if the number is previously marked as prime/not prime
     if number in _memorization_prime:
         return _memorization_prime[number]
 
-    for i in range(2, int(number ** 0.5) + 1):
+    if number % 3 == 0 or number % 5 == 0 or number % 7 == 0:
+        _memorization_prime[number] = False
+        return False
+
+    for i in filter(divisible_by_357, range(11, int(sqrt(number)) + 1, 2)):
         if number % i == 0:
-            _memorization_prime[number] = 0
-            return 0
+            _memorization_prime[number] = False
+            return False
 
-    _memorization_prime[number] = 1
-    return 1
-
-
-def make_guess(number: int, guess: int) -> int:
-    """Make a guess to determine the factors of a number.
-
-    Args:
-        number (int): The number for which the factors should be found.
-        guess (int): The guess for the factors.
-
-    Returns:
-        A guess for the factors of the number.
-
-    """
-    while math.gcd(number, guess) != 1:
-        guess += 1
-
-    return guess
+    _memorization_prime[number] = True
+    return True
 
 
-def calculate_exponent(guess: int) -> int:
-    """Calculate the exponent for the factors of a number.
-
-    Args:
-        guess (int): The guess for the factors.
-
-    Returns:
-        The exponent for the factors of the number.
-
-    """
-    r = 2
-    g = pow(guess, r)
-
-    while g <= 1:
-        r += 2
-        g = pow(guess, r)
-
-    return r
-
-
-def find_factors(number: int, guess: int, exponent: int) -> tuple[int, int]:
-    """Find the factors for a number. the output is always a prime.
-
-    Args:
-        number (int): The number for which the factors should be found.
-        guess (int): The guess for the factors.
-        exponent (int): The exponent for the factors.
-
-    Returns:
-        The factors of the number.
-
-    Raises:
-        ZeroDivisionError: If the number is 0.
-        OverflowError: If the number is too large.
-    """
-
-    nom = pow(guess, exponent // 2, number) + 1
-    den = number
-
-    outcome = math.gcd(nom, den)
-    if outcome == number or outcome == 1:
-        return 1, 0
-
-    while not is_prime(number // outcome):
-        nom, den = den, nom % den
-        outcome = math.gcd(nom, den)
-
-    return number // outcome, number // (number // outcome)
-
-
-def shor(number: int) -> set[int]:
-    """ Finding the prime factors of a number. For example, the prime factors of 15 are 3 and 5.
-    This is for breaking the RSA encryption algorithm.
-
-    Args:
-        number (int): The number for which the prime factors should be found.
-
-    Returns:
-        The prime factors of the number.
-    """
-
-    # Only factors can be found for values higher than 2
-    # When the number itself is a prime, we just return the number and 1
-    if number < 2 or is_prime(number):
+def find_prime_factors(number):
+    if number <= 2 or is_prime(number):
         return {number}
 
-    # If the number is even, the prime factors are 2 and the prime factors of the other number
+    # When the number is a perfect square and the square root is a prime
+    # The prime factors are the square root and the square root
+    # square_root = sqrt(number)
+    # if square_root.is_integer() and is_prime(int(square_root)):
+    #     return {int(square_root)}
+
+    fac = set()
     if number % 2 == 0:
-        return {2, *shor(number // 2)}
+        fac.add(2)
+        number >>= 1
+        while number % 2 == 0:
+            number >>= 1
 
-    # Staring with a guess of 3
-    g = number // 100 + 3
-
-    # Start the loop to find the prime factors
-    while True:
-        g = make_guess(number, g)
-        r = calculate_exponent(g)
-
-        # This is in a try-except block because the pow function can raise
-        # a ZeroDivisionError or OverflowError. This means that it is not
-        # possible to find the prime factors for the given number.
-        # And this will restart the process with a new guess.
-        try:
-            f1, f2 = find_factors(number, g, r)
-        except (ZeroDivisionError, OverflowError):
-            g += 1
+    g = 3
+    while number != 1:
+        if number % g == 0:
+            fac.add(g)
+            number //= g
             continue
 
-        # When the second factor is 1, the first factor is the prime factor
-        # The guess was not correct, restart loop with another guess
-        if f1 == 1:
-            g += 1
-            continue
+        g += 2
 
-        # When the second factor is a prime
-        # We can return the two prime factors
-        if is_prime(f2):
-            return {f1, f2}
-
-        # When the second factor is not a prime
-        # Recursively find the prime factors of the other number
-        # We return the set of the unique primes
-        return {f1, *shor(f2)}
+    return fac
 
 
 if __name__ == "__main__":
-    user_input = 325784122923
+    user_input = 9
 
     s = time.perf_counter_ns()
-    factors = shor(user_input)
+    factors = find_prime_factors(user_input)
     e = time.perf_counter_ns()
     sec = (e - s) / 1_000_000_000
 
     print(f"The factors of {user_input} are {factors}.")
     print(f"The time taken to find the prime factors is {sec} seconds.")
+
