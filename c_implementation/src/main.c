@@ -218,6 +218,15 @@ i8 is_prime(u64 number) {
 }
 
 Set* find_prime_factors(u64 number) {
+  // Find the prime factors of a number.
+  //
+  // Args:
+  //     number (unsigned long long): The number for which the prime factors
+  //     should be found.
+  //
+  // Returns:
+  //     Set: The prime factors of the number.
+
   // We need to create the memorization_prime dictionary if it does not exist
   if (memorization_prime == NULL) {
     memorization_prime = create_dict();
@@ -233,7 +242,7 @@ Set* find_prime_factors(u64 number) {
     return initialize_set_with_single_item(number);
   }
 
-  Set* factors = create_set(1);
+  Set* factors = create_set(5);
 
   if (number % 2 == 0) {
     factors = add_u64_to_set(factors, 2);
@@ -243,7 +252,6 @@ Set* find_prime_factors(u64 number) {
       number >>= 1;
     }
   }
-
 
   for (u64 g = 3; number != 1; g += 2) {
     if (number % g == 0) {
@@ -257,4 +265,6 @@ Set* find_prime_factors(u64 number) {
       break;
     }
   }
+
+  return factors;
 }
