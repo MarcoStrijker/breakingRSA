@@ -1,8 +1,18 @@
 """
-Python implementation of the RSA encryption algorithm.
+Python implementation of the prime factorization algorithm.
 
-The RSA algorithm is a public-key encryption algorithm that is based on the
-difficulty of factoring large integers.
+This implementation uses memorization to store the prime numbers that have been found.
+This is used to speed up the process of finding the prime factors of a number.
+
+The algorithm is as follows:
+1. If the number is less than or equal to 2, return the number.
+2. If the number is a prime number, return the number.
+3. If the number is divisible by 2, add 2 to the factors and divide the number by 2.
+4. Find the prime factors of the number by iterating from 3 to the square root of the number.
+5. If the number is divisible by the current number, add the number to the factors and divide the number by
+   the current number.
+6. If the number is not divisible by the current number, increment the current number by 2.
+7. Return the factors.
 
 """
 
@@ -35,10 +45,8 @@ def is_prime(number: int) -> bool:
     Returns:
         A zero of a one, representing a boolean
     """
-    if number % 2 == 0:
-        return number == 2
 
-    if number in _memorization_prime:
+    if number <= 2 and number in _memorization_prime:
         return _memorization_prime[number]
 
     if number % 3 == 0 or number % 5 == 0 or number % 7 == 0:
@@ -58,11 +66,6 @@ def find_prime_factors(number):
     if number <= 2 or is_prime(number):
         return {number}
 
-    # When the number is a perfect square and the square root is a prime
-    # The prime factors are the square root and the square root
-    # square_root = sqrt(number)
-    # if square_root.is_integer() and is_prime(int(square_root)):
-    #     return {int(square_root)}
 
     fac = set()
     if number % 2 == 0:
@@ -84,7 +87,7 @@ def find_prime_factors(number):
 
 
 if __name__ == "__main__":
-    user_input = 9
+    user_input = 39452342
 
     s = time.perf_counter_ns()
     factors = find_prime_factors(user_input)
