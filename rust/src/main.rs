@@ -5,7 +5,7 @@ use find_primes::_find_prime_factors;
 
 fn main() {
 
-    let user_input: u64 = 243;
+    let user_input: u64 = 15;
 
     let s = Instant::now();
     let set: HashSet<u64> = _find_prime_factors(user_input);
