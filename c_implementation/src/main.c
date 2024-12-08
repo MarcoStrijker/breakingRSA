@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <Python.h>
 
 #define u64 unsigned long long
 #define u8 unsigned char
@@ -267,4 +268,50 @@ Set* find_prime_factors(u64 number) {
   }
 
   return factors;
+}
+
+
+static PyObject *c_find_prime_factors(PyObject *self, PyObject *args) {
+  u64 number;
+
+  if (!PyArg_ParseTuple(args, "K", &number)) {
+    return NULL;
+  }
+
+  Set* factors = find_prime_factors(number);
+
+  PyObject* python_set = PySet_New(NULL);
+  for (u8 i = 0; i < factors->size; i++) {
+    PySet_Add(python_set, Py_BuildValue("K", factors->items[i]));
+  }
+  
+  free_set(factors);
+
+  return python_set;
+}
+
+
+static PyMethodDef module_methods[] = {
+    {"find_prime_factors", c_find_prime_factors, METH_VARARGS, "Find the prime factors of a number."},
+    {NULL, NULL, 0, NULL}
+};
+
+static struct PyModuleDef main_module = {
+    PyModuleDef_HEAD_INIT,
+    "main",
+    "",
+    -1,
+    module_methods
+};
+
+
+PyMODINIT_FUNC PyInit_main(void) {
+    // Create the prime memorization dictionary.
+    memorization_prime = create_dict();
+    u64 small_primes[] = {0, 1, 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31};
+    for (int i = 0; i < 13; i++) {
+      add_to_dict(memorization_prime, small_primes[i], (i >= 2) ? 1 : 0);
+    }
+
+    return PyModule_Create(&main_module);
 }
