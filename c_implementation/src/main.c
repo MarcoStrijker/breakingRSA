@@ -194,21 +194,21 @@ i8 is_prime(u64 number) {
 
   i8 mem = get_from_dict(memorization_prime, number);
 
-  // If mem is negative one, it means the number is not in the dictionary
   if (mem != -1) {
     return mem;
   }
 
-  if (number % 2 == 0 | number % 3 == 0 || number % 5 == 0 || number % 7 == 0) {
+  // Handle small numbers efficiently
+  if (number <= 1) return 0;
+  if (number <= 3) return 1;
+  if (number % 2 == 0 || number % 3 == 0) {
+    add_to_dict(memorization_prime, number, 0);
     return 0;
   }
 
-  for (u64 i = 11; i <= sqrt(number); i+=2) {
-    if (i % 3 == 0 || i % 5 == 0 || i % 7 == 0) {
-      continue;
-    }
-
-    if (number % i == 0) {
+  // Use 6k±1 optimization
+  for (u64 i = 5; i * i <= number; i += 6) {
+    if (number % i == 0 || number % (i + 2) == 0) {
       add_to_dict(memorization_prime, number, 0);
       return 0;
     }
@@ -228,43 +228,42 @@ Set* find_prime_factors(u64 number) {
   // Returns:
   //     Set: The prime factors of the number.
 
-  // We need to create the memorization_prime dictionary if it does not exist
-  if (memorization_prime == NULL) {
-    memorization_prime = create_dict();
-    add_to_dict(memorization_prime, 0, 0);
-    add_to_dict(memorization_prime, 1, 0);
-    add_to_dict(memorization_prime, 2, 1);
-    add_to_dict(memorization_prime, 3, 1);
-    add_to_dict(memorization_prime, 5, 1);
-    add_to_dict(memorization_prime, 7, 1);
-  }
 
-  if (number < 2 || is_prime(number)) {
+  if (number < 2) {
     return initialize_set_with_single_item(number);
   }
 
-  Set* factors = create_set(5);
+  if (is_prime(number)) {
+    return initialize_set_with_single_item(number);
+  }
 
-  if (number % 2 == 0) {
-    factors = add_u64_to_set(factors, 2);
-
+  Set* factors = create_set(10);
+  
+  while (number % 2 == 0) {
+    add_to_set(factors, 2);
     number >>= 1;
-    while (number % 2 == 0) {
-      number >>= 1;
+  }
+
+  while (number % 3 == 0) {
+    add_to_set(factors, 3);
+    number /= 3;
+  }
+
+  // Use wheel factorization with increments of 6k±1
+  for (u64 i = 5; i * i <= number; i += 6) {
+    while (number % i == 0) {
+      add_to_set(factors, i);
+      number /= i;
+    }
+    while (number % (i + 2) == 0) {
+      add_to_set(factors, i + 2);
+      number /= (i + 2);
     }
   }
 
-  for (u64 g = 3; number != 1; g += 2) {
-    if (number % g == 0) {
-      factors = add_u64_to_set(factors, g);
-      number /= g;
-      continue;
-    } 
-  
-    if (is_prime(number)) {
-      factors = add_u64_to_set(factors, number);
-      break;
-    }
+  // If number is still greater than 1, it's prime
+  if (number > 1) {
+    add_to_set(factors, number);
   }
 
   return factors;
