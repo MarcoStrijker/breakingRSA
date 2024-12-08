@@ -10,6 +10,7 @@ import unittest
 from python.src.main import shor as python_implementation
 from cython_implementation.src.main import shor as cython_implementation
 from rust.src.main import shor as rust_implementation
+from c_implementation.src.main import find_prime_factors as c_implementation
 
 
 # Define outcomes for certain inputs
@@ -54,9 +55,9 @@ class ShorImplementations(unittest.TestCase):
         for number, factors in RESULTS.items():
             self.assertEqual(cython_implementation(number), factors)
 
-    def test_rust(self):
+    def test_c(self):
         for number, factors in RESULTS.items():
-            self.assertEqual(rust_implementation(number), factors)
+            self.assertEqual(c_implementation(number), factors)
 
 
 if __name__ == "__main__":
