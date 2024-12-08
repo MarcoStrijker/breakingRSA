@@ -31,7 +31,7 @@ __compiled = False
 COMMANDS = {
     "Cython": rf"cythonize --3str --no-docstrings -i cython_implementation\src\*.pyx",
     "Rust": r"cd rust && maturin develop --release --strip --skip-install --bindings pyo3",
-    "C": r"cd c_implementation\src && gcc -shared -o main.dll main.c",
+    "C": r'gcc -shared -o2 c_implementation\src\main.pyd -I"C:\Users\xdmar\AppData\Local\Programs\Python\Python313\include" -L"C:\Users\xdmar\AppData\Local\Programs\Python\Python313\libs" c_implementation\src\main.c -lpython313"',
     "Mypyc": r"cd mypyc_implementation\src && mypyc ..\..\python\src\main.py",
 }
 
