@@ -194,19 +194,16 @@ i8 is_prime(u64 number) {
 
   i8 mem = get_from_dict(memorization_prime, number);
 
+  // If mem is negative one, it means the number is not in the dictionary
   if (mem != -1) {
     return mem;
   }
 
-  // Handle small numbers efficiently
-  if (number <= 1) return 0;
-  if (number <= 3) return 1;
   if (number % 2 == 0 || number % 3 == 0) {
     add_to_dict(memorization_prime, number, 0);
     return 0;
   }
 
-  // Use 6k±1 optimization
   for (u64 i = 5; i * i <= number; i += 6) {
     if (number % i == 0 || number % (i + 2) == 0) {
       add_to_dict(memorization_prime, number, 0);
@@ -228,12 +225,7 @@ Set* find_prime_factors(u64 number) {
   // Returns:
   //     Set: The prime factors of the number.
 
-
-  if (number < 2) {
-    return initialize_set_with_single_item(number);
-  }
-
-  if (is_prime(number)) {
+  if (number < 2 || is_prime(number)) {
     return initialize_set_with_single_item(number);
   }
 
@@ -249,7 +241,6 @@ Set* find_prime_factors(u64 number) {
     number /= 3;
   }
 
-  // Use wheel factorization with increments of 6k±1
   for (u64 i = 5; i * i <= number; i += 6) {
     while (number % i == 0) {
       add_to_set(factors, i);
@@ -261,7 +252,6 @@ Set* find_prime_factors(u64 number) {
     }
   }
 
-  // If number is still greater than 1, it's prime
   if (number > 1) {
     add_to_set(factors, number);
   }
